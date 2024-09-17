@@ -1,27 +1,27 @@
 .ONESHELL:
 
 CC=clang++
+BUILD=.build
 
 SRC=src
 MAIN_SRC=${SRC}/main
-STATIC_LIB=slib
-STATIC_LIB_SRC=${SRC}/${STATIC_LIB}
-DYNAMIC_LIB=dlib
-DYNAMIC_LIB_SRC=${SRC}/${DYNAMIC_LIB}
+STATIC_LIBS:=slib
+DYNAMIC_LIBS=dlib
 
-BUILD=.build
+STATIC_LIBS_OBJS:=$(STATIC_LIBS:%=${BUILD}/%.o)
+DYNAMIC_LIBS_OBJS:=$(DYNAMIC_LIBS:%=${BUILD}/shared/%.so)
 
-main: ${MAIN_SRC}/main.cpp ${BUILD}/${STATIC_LIB}.o ${BUILD}/shared/${DYNAMIC_LIB}.so ${BUILD}
-	${CC} $< ${BUILD}/${STATIC_LIB}.o -I${SRC} -L${BUILD}/shared -o ${BUILD}/main
+main: ${MAIN_SRC}/main.cpp ${STATIC_LIBS_OBJS} ${DYNAMIC_LIBS_OBJS} ${BUILD}
+	${CC} $< ${STATIC_LIBS_OBJS} -I${SRC} -L${BUILD}/shared -o ${BUILD}/main
 
 run: main
 	./${BUILD}/main
 
-${BUILD}/${STATIC_LIB}.o: ${STATIC_LIB_SRC}/${STATIC_LIB}.cpp ${BUILD}
-	${CC} -c $< -o ${BUILD}/${STATIC_LIB}.o
+${BUILD}/%.o: ${SRC}/%/*.cpp ${BUILD}
+	${CC} -c $< -o $@
 
-${BUILD}/shared/${DYNAMIC_LIB}.so: ${DYNAMIC_LIB_SRC}/${DYNAMIC_LIB}.cpp ${BUILD}
-	${CC} -shared $< -o ${BUILD}/shared/${DYNAMIC_LIB}.so
+${BUILD}/shared/%.so: ${SRC}/%/*.cpp ${BUILD}
+	${CC} -shared $< -o $@
 
 .PHONY: ${BUILD} clean
 ${BUILD}:
