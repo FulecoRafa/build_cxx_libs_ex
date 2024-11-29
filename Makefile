@@ -37,7 +37,7 @@ run: main
 	./${BUILD}/main
 
 # Any static library (ends in .o) and how it will build.
-# By default, asume all cpp files in src/lib folder are parts of the 
+# By default, asume all cpp files in src/lib folder are parts of the
 # resulting object.
 #
 # OBS:
@@ -49,7 +49,7 @@ ${BUILD}/%.o: ${SRC}/%/*.cpp ${BUILD}
 	${CC} -c $< -o $@
 
 # Any dynamic library (ends in .so) and how it will build.
-# By default, asume all cpp files in src/lib folder are parts of the 
+# By default, asume all cpp files in src/lib folder are parts of the
 # resulting object.
 ${BUILD}/shared/lib%.so: ${SRC}/%/*.cpp ${BUILD}/shared
 	${CC} -fPIC -shared $< -o $@
@@ -70,3 +70,20 @@ ${BUILD}/shared:
 # Drops build directory entirelly
 clean:
 	rm -rf ${BUILD}/*
+
+
+
+##########################
+# OTHER HELPING COMMANDS #
+##########################
+# -E to stop at pre-processor
+pre-processor: ${MAIN_SRC}/main.cpp ${STATIC_LIBS_OBJS} ${DYNAMIC_LIBS_OBJS}
+	${CC} -E $< ${STATIC_LIBS_OBJS} -I${SRC} -L${BUILD}/shared/ $(DYNAMIC_LIBS:%=-l%) -o ${BUILD}/main.i
+
+# -S to stop at compiler
+compiler: ${MAIN_SRC}/main.cpp ${STATIC_LIBS_OBJS} ${DYNAMIC_LIBS_OBJS}
+	${CC} -S $< ${STATIC_LIBS_OBJS} -I${SRC} -L${BUILD}/shared/ $(DYNAMIC_LIBS:%=-l%) -o ${BUILD}/main.asm
+
+# -c to stop at assembler
+assembler: ${MAIN_SRC}/main.cpp ${STATIC_LIBS_OBJS} ${DYNAMIC_LIBS_OBJS}
+	${CC} -c $< ${STATIC_LIBS_OBJS} -I${SRC} -L${BUILD}/shared/ $(DYNAMIC_LIBS:%=-l%) -o ${BUILD}/main.o
